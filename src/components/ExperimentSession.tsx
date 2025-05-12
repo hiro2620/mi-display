@@ -9,10 +9,12 @@ import {
 } from '@/utils/csvParser';
 import FixationCross from '@/components/FixationCross';
 import TaskInstruction from '@/components/TaskInstruction';
+import LoadingScreen from '@/components/LoadingScreen';
 import { sendTrigger } from '@/actions/sendTrigger';
 
 interface ExperimentSessionProps {
-  fixationDuration?: number; // 注視点表示時間（ミリ秒）
+  fixationDurationMin?: number; // 注視点表示時間の最小値（ミリ秒）
+  fixationDurationMax?: number; // 注視点表示時間の最大値（ミリ秒）
   taskDuration?: number; // タスク指示表示時間（ミリ秒）
 }
 
@@ -20,9 +22,11 @@ interface ExperimentSessionProps {
  * 実験セッションを管理するコンポーネント
  */
 export default function ExperimentSession({
-  fixationDuration = 3000, // デフォルト3秒
+  fixationDurationMin = 2000, // デフォルト最小2秒
+  fixationDurationMax = 4000, // デフォルト最大4秒
   taskDuration = 5000, // デフォルト5秒
 }: ExperimentSessionProps) {
+  const [currentFixationDuration, setCurrentFixationDuration] = useState<number>(fixationDurationMin);
   const [taskDefinitions, setTaskDefinitions] = useState<Task[]>([]);
   const [taskSequences, setTaskSequences] = useState<TaskSequence[]>([]);
   const [orderedTasks, setOrderedTasks] = useState<Task[]>([]);
@@ -33,6 +37,8 @@ export default function ExperimentSession({
   const [taskDefinitionsUploaded, setTaskDefinitionsUploaded] = useState<boolean>(false);
   const [taskSequencesUploaded, setTaskSequencesUploaded] = useState<boolean>(false);
   const [showOrderPreview, setShowOrderPreview] = useState<boolean>(false);
+  // 読み込み画面の表示状態を管理
+  const [showLoading, setShowLoading] = useState<boolean>(false);
 
   // タスク定義ファイルをアップロードして処理する関数
   const handleTaskDefinitionUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,6 +85,13 @@ export default function ExperimentSession({
   // 実験を開始する関数
   const startExperiment = () => {
     if (orderedTasks.length === 0) return;
+    // まず読み込み画面を表示
+    setShowLoading(true);
+  };
+
+  // 読み込み完了後に実験を実際に開始する関数
+  const startExperimentAfterLoading = () => {
+    setShowLoading(false);
     setIsRunning(true);
     setCurrentTaskIndex(0);
     setShowFixation(true);
@@ -90,6 +103,7 @@ export default function ExperimentSession({
     setIsRunning(false);
     setShowFixation(false);
     setShowTaskInstruction(false);
+    setShowLoading(false);
   };
 
   // サンプルファイルをロードする関数
@@ -142,7 +156,7 @@ export default function ExperimentSession({
           taskIndex: currentTaskIndex,
           taskDescription: currentTask.description
         });
-      }, fixationDuration);
+      }, currentFixationDuration);
     } else if (showTaskInstruction) {
       // タスク指示表示後、次のタスクの注視点に切り替えるか、実験終了
       timer = setTimeout(() => {
@@ -158,6 +172,9 @@ export default function ExperimentSession({
         if (currentTaskIndex + 1 < orderedTasks.length) {
           setCurrentTaskIndex(currentTaskIndex + 1);
           setShowFixation(true);
+          setCurrentFixationDuration(
+            Math.floor(Math.random() * (fixationDurationMax - fixationDurationMin + 1)) + fixationDurationMin
+          );
         } else {
           // すべてのタスクが終了
           setIsRunning(false);
@@ -168,11 +185,14 @@ export default function ExperimentSession({
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [isRunning, currentTaskIndex, showFixation, showTaskInstruction, orderedTasks.length, fixationDuration, taskDuration, orderedTasks]);
+  }, [isRunning, currentTaskIndex, showFixation, showTaskInstruction, orderedTasks.length, fixationDurationMin, fixationDurationMax, taskDuration, orderedTasks, currentFixationDuration]);
 
   // 現在表示するコンテンツを決定
   let content;
-  if (isRunning) {
+  if (showLoading) {
+    // 読み込み画面を表示
+    content = <LoadingScreen duration={5000} onComplete={startExperimentAfterLoading} />;
+  } else if (isRunning) {
     if (showFixation) {
       content = <FixationCross />;
     } else if (showTaskInstruction && currentTaskIndex >= 0 && currentTaskIndex < orderedTasks.length) {
@@ -286,9 +306,9 @@ export default function ExperimentSession({
           
           <button
             onClick={stopExperiment}
-            disabled={!isRunning}
+            disabled={!isRunning && !showLoading}
             className={`px-6 py-2 rounded-lg font-semibold
-              ${isRunning 
+              ${isRunning || showLoading
                 ? 'bg-red-600 text-white hover:bg-red-700' 
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
           >
@@ -298,7 +318,7 @@ export default function ExperimentSession({
 
         <div className="mt-6 text-sm text-gray-600">
           <p>
-            注視点表示時間: {fixationDuration / 1000}秒 / タスク指示表示時間: {taskDuration / 1000}秒
+            注視点表示時間: {fixationDurationMin / 1000}秒 - {fixationDurationMax / 1000}秒 / タスク指示表示時間: {taskDuration / 1000}秒
           </p>
         </div>
       </div>

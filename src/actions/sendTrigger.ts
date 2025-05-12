@@ -1,6 +1,12 @@
 'use server';
 
+import { createSocket } from "node:dgram";
+
 type TriggerType = 'task_start' | 'task_end';
+
+const socket = createSocket('udp4');
+const PORT = 50000; // 送信先のポート番号
+const HOST = '172.16.191.147'; // 送信先のホスト名
 
 /**
  * 外部システムにトリガーを送信するServer Action
@@ -23,6 +29,14 @@ export async function sendTrigger(
     taskId,
     ...additionalInfo
   };
+
+  if (triggerType === 'task_start') {
+    socket.send('t', PORT, HOST, (err) => {
+      if (err) {
+        console.error('UDP送信エラー:', err);
+      }
+    });
+  }
   
   console.log(`トリガー送信: ${JSON.stringify(data)}`);
   
