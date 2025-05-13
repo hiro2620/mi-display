@@ -33,7 +33,7 @@ export default function LoadingScreen({ duration, onComplete }: LoadingScreenPro
   const strokeDashoffset = circumference - (progress / 100) * circumference;
   
   return (
-    <div className="flex flex-col items-center justify-center min-h-full bg-black">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black">
       <div className="relative">
         <svg className="w-40 h-40 transform -rotate-90">
           <circle

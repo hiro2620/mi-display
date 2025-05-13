@@ -2,7 +2,7 @@
 
 import { createSocket } from "node:dgram";
 
-type TriggerType = 'task_start' | 'task_end';
+type TriggerType = 'experiment_start' | 'experiment_end' | 'experiment_abort' | 'task_start' | 'task_end';
 
 const socket = createSocket('udp4');
 const PORT = 50000; // 送信先のポート番号
