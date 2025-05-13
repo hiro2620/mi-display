@@ -3,20 +3,15 @@ import TriggerTester from '@/components/TriggerTester';
 
 export default function Home() {
   return (
-    <main className="w-full min-h-screen p-4">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-4">MI Display テスト</h1>
-        <TriggerTester />
-      </div>
-      
-      <div className="mt-8 border-t pt-8">
-        <h2 className="text-xl font-semibold mb-4">実験セッション</h2>
+    <main className="w-full min-h-screen">
+      {/* <div className="mt-8 border-t pt-8">
+        <h2 className="text-xl font-semibold mb-4">実験セッション</h2> */}
         <ExperimentSession 
           fixationDurationMin={4100}
           fixationDurationMax={4800}
           taskDuration={3000} // タスク指示表示時間（ミリ秒）
         />
-      </div>
+      {/* </div> */}
     </main>
   );
 }

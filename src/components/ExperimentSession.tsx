@@ -1,16 +1,17 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { 
-  Task, 
-  TaskSequence, 
-  parseTaskDefinitionsCSV, 
-  parseTaskSequenceCSV, 
-  createOrderedTasks 
+import {
+  Task,
+  TaskSequence,
+  parseTaskDefinitionsCSV,
+  parseTaskSequenceCSV,
+  createOrderedTasks
 } from '@/utils/csvParser';
 import FixationCross from '@/components/FixationCross';
 import TaskInstruction from '@/components/TaskInstruction';
 import LoadingScreen from '@/components/LoadingScreen';
 import { sendTrigger } from '@/actions/sendTrigger';
+import TriggerTester from '@/components/TriggerTester';
 
 interface ExperimentSessionProps {
   fixationDurationMin?: number; // 注視点表示時間の最小値（ミリ秒）
@@ -51,7 +52,7 @@ export default function ExperimentSession({
       const parsedTasks = parseTaskDefinitionsCSV(content);
       setTaskDefinitions(parsedTasks);
       setTaskDefinitionsUploaded(true);
-      
+
       // 両方のファイルがアップロードされた場合、順序付きタスクを生成
       if (taskSequencesUploaded) {
         const ordered = createOrderedTasks(parsedTasks, taskSequences);
@@ -72,7 +73,7 @@ export default function ExperimentSession({
       const parsedSequences = parseTaskSequenceCSV(content);
       setTaskSequences(parsedSequences);
       setTaskSequencesUploaded(true);
-      
+
       // 両方のファイルがアップロードされた場合、順序付きタスクを生成
       if (taskDefinitionsUploaded) {
         const ordered = createOrderedTasks(taskDefinitions, parsedSequences);
@@ -115,14 +116,14 @@ export default function ExperimentSession({
       const parsedDefinitions = parseTaskDefinitionsCSV(definitionsText);
       setTaskDefinitions(parsedDefinitions);
       setTaskDefinitionsUploaded(true);
-      
+
       // タスク順序ファイルのロード
       const sequenceResponse = await fetch('/task-sequence.csv');
       const sequenceText = await sequenceResponse.text();
       const parsedSequences = parseTaskSequenceCSV(sequenceText);
       setTaskSequences(parsedSequences);
       setTaskSequencesUploaded(true);
-      
+
       // 順序付きタスクの生成
       const ordered = createOrderedTasks(parsedDefinitions, parsedSequences);
       setOrderedTasks(ordered);
@@ -149,7 +150,7 @@ export default function ExperimentSession({
       timer = setTimeout(() => {
         setShowFixation(false);
         setShowTaskInstruction(true);
-        
+
         // タスク開始時にトリガーを送信
         const currentTask = orderedTasks[currentTaskIndex];
         sendTrigger('task_start', currentTask.id, {
@@ -166,9 +167,9 @@ export default function ExperimentSession({
           taskIndex: currentTaskIndex,
           taskDescription: currentTask.description
         });
-        
+
         setShowTaskInstruction(false);
-        
+
         if (currentTaskIndex + 1 < orderedTasks.length) {
           setCurrentTaskIndex(currentTaskIndex + 1);
           setShowFixation(true);
@@ -201,41 +202,44 @@ export default function ExperimentSession({
   } else {
     content = (
       <div className="flex flex-col items-center justify-center min-h-screen p-8 gap-8">
-        <h1 className="text-3xl font-bold">運動想起実験UI</h1>
-        
+        <h1 className="text-3xl font-bold">運動想起実験</h1>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold mb-4">MI Display テスト</h1>
+          <TriggerTester />
+        </div>
         <div className="w-full max-w-md">
           <h2 className="text-xl font-semibold mb-4">タスクファイルをアップロード</h2>
-          
+
           <div className="mb-6">
             <label className="block mb-2 font-semibold">
               タスク定義ファイル
               <p className="text-sm font-normal text-gray-600 mb-2">
                 形式: id,description（1行目はヘッダー行）
               </p>
-              <input 
-                type="file" 
-                accept=".csv" 
+              <input
+                type="file"
+                accept=".csv"
                 onChange={handleTaskDefinitionUpload}
                 className="block w-full text-sm border border-gray-300 rounded-lg cursor-pointer bg-gray-50 p-2.5"
               />
             </label>
           </div>
-          
+
           <div className="mb-6">
             <label className="block mb-2 font-semibold">
               タスク順序ファイル
               <p className="text-sm font-normal text-gray-600 mb-2">
                 形式: order,task_id（1行目はヘッダー行）
               </p>
-              <input 
-                type="file" 
-                accept=".csv" 
+              <input
+                type="file"
+                accept=".csv"
                 onChange={handleTaskSequenceUpload}
                 className="block w-full text-sm border border-gray-300 rounded-lg cursor-pointer bg-gray-50 p-2.5"
               />
             </label>
           </div>
-          
+
           <button
             onClick={loadSampleFiles}
             className="w-full px-4 py-2 text-sm text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 mb-6"
@@ -272,14 +276,14 @@ export default function ExperimentSession({
           <div className="w-full max-w-md">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-xl font-semibold">実行順序</h2>
-              <button 
+              <button
                 onClick={toggleOrderPreview}
                 className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
               >
                 {showOrderPreview ? '非表示' : '表示'}
               </button>
             </div>
-            
+
             {showOrderPreview && (
               <ul className="bg-gray-50 p-4 rounded-lg max-h-60 overflow-auto">
                 {orderedTasks.map((task, index) => (
@@ -297,23 +301,23 @@ export default function ExperimentSession({
             onClick={startExperiment}
             disabled={orderedTasks.length === 0}
             className={`px-6 py-2 rounded-lg font-semibold
-              ${orderedTasks.length > 0 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
+              ${orderedTasks.length > 0
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
           >
             実験開始
           </button>
-          
-          <button
+
+          {/* <button
             onClick={stopExperiment}
             disabled={!isRunning && !showLoading}
             className={`px-6 py-2 rounded-lg font-semibold
               ${isRunning || showLoading
-                ? 'bg-red-600 text-white hover:bg-red-700' 
+                ? 'bg-red-600 text-white hover:bg-red-700'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
           >
             実験停止
-          </button>
+          </button> */}
         </div>
 
         <div className="mt-6 text-sm text-gray-600">
