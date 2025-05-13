@@ -17,6 +17,7 @@ export default function PreparationPage() {
   const [taskDefinitionsUploaded, setTaskDefinitionsUploaded] = useState<boolean>(false);
   const [taskSequencesUploaded, setTaskSequencesUploaded] = useState<boolean>(false);
   const [showOrderPreview, setShowOrderPreview] = useState<boolean>(false);
+  const [showTaskListPreview, setShowTaskListPreview] = useState<boolean>(false);
 
   // タスク定義ファイルをアップロードして処理する関数
   const handleTaskDefinitionUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,6 +91,11 @@ export default function PreparationPage() {
     setShowOrderPreview(!showOrderPreview);
   };
 
+  // タスク一覧プレビューの表示/非表示を切り替える関数
+  const toggleTaskListPreview = () => {
+    setShowTaskListPreview(!showTaskListPreview);
+  };
+
   // 実験を開始する関数
   const startExperiment = () => {
     if (orderedTasks.length === 0) return;
@@ -155,6 +161,41 @@ export default function PreparationPage() {
           </button>
         </div>
       </div>
+      
+      {taskDefinitionsUploaded && (
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-xl font-semibold">タスク一覧</h2>
+            <button
+              onClick={toggleTaskListPreview}
+              className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              {showTaskListPreview ? '非表示' : '表示'}
+            </button>
+          </div>
+          
+          {showTaskListPreview && (
+            <div className="bg-white p-4 rounded-md border max-h-60 overflow-y-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-2">ID</th>
+                    <th className="text-left p-2">説明</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {taskDefinitions.map((task) => (
+                    <tr key={task.id} className="border-b hover:bg-gray-50">
+                      <td className="p-2">{task.id}</td>
+                      <td className="p-2">{task.description}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
       
       {orderedTasks.length > 0 && (
         <div className="mb-8">

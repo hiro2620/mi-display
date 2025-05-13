@@ -128,7 +128,6 @@ export default function ExperimentPage() {
     sendTrigger('experiment_abort', 'abort', {
       completedTasks: currentTaskIndex
     });
-    router.push('/');
   };
 
   // キーボードショートカットを設定（ESCキーで実験終了）
@@ -136,6 +135,7 @@ export default function ExperimentPage() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         stopExperiment();
+        e.preventDefault(); // デフォルトのESC動作を防ぐ
       }
     };
 
@@ -156,7 +156,7 @@ export default function ExperimentPage() {
       <div className="flex flex-col items-center justify-center w-full h-screen bg-black text-white">
         <div className="text-2xl">{isRunning ? '実験準備中...' : '実験終了'}</div>
         <button
-          onClick={stopExperiment}
+          onClick={() => router.push('/')}
           className="mt-8 px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
         >
           実験を中止する
