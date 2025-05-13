@@ -11,7 +11,7 @@ export default function ExperimentPage() {
   const [orderedTasks, setOrderedTasks] = useState<Task[]>([]);
   const [currentTaskIndex, setCurrentTaskIndex] = useState<number>(-1);
   const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [showFixation, setShowFixation] = useState<boolean>(false);
+  const [showFixation, setShowFixation] = useState<boolean>(true);
   const [showTaskInstruction, setShowTaskInstruction] = useState<boolean>(false);
   const [fixationDurationMin, setFixationDurationMin] = useState<number>(4100);
   const [fixationDurationMax, setFixationDurationMax] = useState<number>(4800);
