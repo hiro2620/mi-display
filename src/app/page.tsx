@@ -1,6 +1,7 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import TriggerTester from '@/components/TriggerTester';
 import {
   Task,
   TaskSequence,
@@ -114,6 +115,10 @@ export default function PreparationPage() {
     <div className="w-full min-h-screen p-8">
       <h1 className="text-3xl font-bold mb-8">実験準備</h1>
       
+      <div className="mb-8  p-6 bg-gray-50 rounded-lg shadow">
+        <TriggerTester />
+      </div>
+
       <div className="mb-8 p-6 bg-gray-50 rounded-lg shadow">
         <h2 className="text-xl font-semibold mb-4">ファイルのアップロード</h2>
         <div className="flex flex-col gap-4">
