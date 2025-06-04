@@ -6,7 +6,7 @@ type TriggerType = 'experiment_start' | 'experiment_end' | 'experiment_abort' | 
 
 const socket = createSocket('udp4');
 const PORT = 50000; // 送信先のポート番号
-const HOST = '172.16.191.147'; // 送信先のホスト名
+const HOST = '172.16.191.99'; // 送信先のホスト名
 
 /**
  * 外部システムにトリガーを送信するServer Action
