@@ -105,7 +105,6 @@ export default function PreparationPage() {
     sessionStorage.setItem('orderedTasks', JSON.stringify(orderedTasks));
     sessionStorage.setItem('fixationDurationMin', '4100');
     sessionStorage.setItem('fixationDurationMax', '4800');
-    sessionStorage.setItem('taskDuration', '3000');
     
     // 読み込み画面へ移動
     router.push('/loading');

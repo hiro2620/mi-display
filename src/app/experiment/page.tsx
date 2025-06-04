@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import FixationCross from '@/components/FixationCross';
 import TaskInstruction from '@/components/TaskInstruction';
+import ExecuteDisplay from '@/components/ExecuteDisplay';
 import { Task } from '@/utils/csvParser';
 import { sendTrigger } from '@/actions/sendTrigger';
 
@@ -13,9 +14,11 @@ export default function ExperimentPage() {
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [showFixation, setShowFixation] = useState<boolean>(true);
   const [showTaskInstruction, setShowTaskInstruction] = useState<boolean>(false);
+  const [showExecute, setShowExecute] = useState<boolean>(false);
   const [fixationDurationMin, setFixationDurationMin] = useState<number>(4100);
   const [fixationDurationMax, setFixationDurationMax] = useState<number>(4800);
-  const [taskDuration, setTaskDuration] = useState<number>(3000);
+  const [taskInstructionDuration] = useState<number>(2000); // 指示表示時間: 2秒
+  const [executeDuration] = useState<number>(3000); // 実行表示時間: 3秒
   const [currentFixationDuration, setCurrentFixationDuration] = useState<number>(4100);
 
   // 初期化時にセッションストレージからデータを取得
@@ -33,11 +36,9 @@ export default function ExperimentPage() {
     // 他のパラメータも取得
     const minDuration = sessionStorage.getItem('fixationDurationMin');
     const maxDuration = sessionStorage.getItem('fixationDurationMax');
-    const taskDur = sessionStorage.getItem('taskDuration');
     
     if (minDuration) setFixationDurationMin(parseInt(minDuration));
     if (maxDuration) setFixationDurationMax(parseInt(maxDuration));
-    if (taskDur) setTaskDuration(parseInt(taskDur));
     
     // 実験を自動的に開始
     startExperiment(tasks);
@@ -56,6 +57,7 @@ export default function ExperimentPage() {
     setCurrentTaskIndex(0);
     setShowFixation(true);
     setShowTaskInstruction(false);
+    setShowExecute(false);
     setCurrentFixationDuration(
       Math.floor(Math.random() * (fixationDurationMax - fixationDurationMin + 1)) + fixationDurationMin
     );
@@ -74,16 +76,22 @@ export default function ExperimentPage() {
       timer = setTimeout(() => {
         setShowFixation(false);
         setShowTaskInstruction(true);
+      }, currentFixationDuration);
+    } else if (showTaskInstruction) {
+      // タスク指示表示後、「実行」表示に切り替え
+      timer = setTimeout(() => {
+        setShowTaskInstruction(false);
+        setShowExecute(true);
 
-        // タスク開始時にトリガーを送信
+        // タスク開始時にトリガーを送信（実行表示開始時）
         const currentTask = orderedTasks[currentTaskIndex];
         sendTrigger('task_start', currentTask.id, {
           taskIndex: currentTaskIndex,
           taskDescription: currentTask.description
         });
-      }, currentFixationDuration);
-    } else if (showTaskInstruction) {
-      // タスク指示表示後、次のタスクの注視点に切り替えるか、実験終了
+      }, taskInstructionDuration);
+    } else if (showExecute) {
+      // 「実行」表示後、次のタスクの注視点に切り替えるか、実験終了
       timer = setTimeout(() => {
         // タスク終了時にトリガーを送信
         const currentTask = orderedTasks[currentTaskIndex];
@@ -92,7 +100,7 @@ export default function ExperimentPage() {
           taskDescription: currentTask.description
         });
 
-        setShowTaskInstruction(false);
+        setShowExecute(false);
 
         if (currentTaskIndex + 1 < orderedTasks.length) {
           setCurrentTaskIndex(currentTaskIndex + 1);
@@ -112,19 +120,20 @@ export default function ExperimentPage() {
             router.push('/');
           }, 2000);
         }
-      }, taskDuration);
+      }, executeDuration);
     }
 
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [isRunning, currentTaskIndex, showFixation, showTaskInstruction, orderedTasks.length, fixationDurationMin, fixationDurationMax, taskDuration, orderedTasks, currentFixationDuration, router]);
+  }, [isRunning, currentTaskIndex, showFixation, showTaskInstruction, showExecute, orderedTasks.length, fixationDurationMin, fixationDurationMax, taskInstructionDuration, executeDuration, orderedTasks, currentFixationDuration, router]);
 
   // 実験終了ボタン
   const stopExperiment = () => {
     setIsRunning(false);
     setShowFixation(false);
     setShowTaskInstruction(false);
+    setShowExecute(false);
     sendTrigger('experiment_abort', 'abort', {
       completedTasks: currentTaskIndex
     });
@@ -150,6 +159,8 @@ export default function ExperimentPage() {
     return <FixationCross />;
   } else if (showTaskInstruction && currentTaskIndex >= 0 && currentTaskIndex < orderedTasks.length) {
     return <TaskInstruction task={orderedTasks[currentTaskIndex]} />;
+  } else if (showExecute) {
+    return <ExecuteDisplay />;
   } else {
     // 待機中または終了時の表示
     return (
