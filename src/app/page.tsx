@@ -19,6 +19,12 @@ export default function PreparationPage() {
   const [taskSequencesUploaded, setTaskSequencesUploaded] = useState<boolean>(false);
   const [showOrderPreview, setShowOrderPreview] = useState<boolean>(false);
   const [showTaskListPreview, setShowTaskListPreview] = useState<boolean>(false);
+  const [fixationDurationMin, setFixationDurationMin] = useState<number>(4100);
+  const [fixationDurationMax, setFixationDurationMax] = useState<number>(4800);
+  const [taskInstructionDuration, setTaskInstructionDuration] = useState<number>(2000);
+  const [executeDuration, setExecuteDuration] = useState<number>(3000);
+  const [showFixationCross, setShowFixationCross] = useState<boolean>(true);
+  const [showTaskContent, setShowTaskContent] = useState<boolean>(false);
 
   // タスク定義ファイルをアップロードして処理する関数
   const handleTaskDefinitionUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,8 +109,12 @@ export default function PreparationPage() {
     
     // 実験パラメータをセッションストレージに保存
     sessionStorage.setItem('orderedTasks', JSON.stringify(orderedTasks));
-    sessionStorage.setItem('fixationDurationMin', '4100');
-    sessionStorage.setItem('fixationDurationMax', '4800');
+    sessionStorage.setItem('fixationDurationMin', fixationDurationMin.toString());
+    sessionStorage.setItem('fixationDurationMax', fixationDurationMax.toString());
+    sessionStorage.setItem('taskInstructionDuration', taskInstructionDuration.toString());
+    sessionStorage.setItem('executeDuration', executeDuration.toString());
+    sessionStorage.setItem('showFixationCross', showFixationCross.toString());
+    sessionStorage.setItem('showTaskContent', showTaskContent.toString());
     
     // 読み込み画面へ移動
     router.push('/loading');
@@ -226,6 +236,80 @@ export default function PreparationPage() {
           )}
         </div>
       )}
+      
+      <div className="mb-8 p-6 bg-gray-50 rounded-lg shadow">
+        <h2 className="text-xl font-semibold mb-4">実験パラメータ</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block mb-2 text-sm font-medium">注視点表示時間 最小値 (ms):</label>
+            <input
+              type="number"
+              value={fixationDurationMin}
+              onChange={(e) => setFixationDurationMin(Number(e.target.value))}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${!showFixationCross ? 'bg-gray-100 text-gray-400' : ''}`}
+              min="0"
+              step="100"
+              disabled={!showFixationCross}
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm font-medium">注視点表示時間 最大値 (ms):</label>
+            <input
+              type="number"
+              value={fixationDurationMax}
+              onChange={(e) => setFixationDurationMax(Number(e.target.value))}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${!showFixationCross ? 'bg-gray-100 text-gray-400' : ''}`}
+              min="0"
+              step="100"
+              disabled={!showFixationCross}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block mb-2 text-sm font-medium">タスク指示表示時間 (ms):</label>
+            <input
+              type="number"
+              value={taskInstructionDuration}
+              onChange={(e) => setTaskInstructionDuration(Number(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              min="0"
+              step="100"
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm font-medium">実行表示時間 (ms):</label>
+            <input
+              type="number"
+              value={executeDuration}
+              onChange={(e) => setExecuteDuration(Number(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              min="0"
+              step="100"
+            />
+          </div>
+        </div>
+        <div className="mt-4 space-y-2">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={showFixationCross}
+              onChange={(e) => setShowFixationCross(e.target.checked)}
+              className="mr-2"
+            />
+            <span className="text-sm font-medium">注視点を表示する</span>
+          </label>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={showTaskContent}
+              onChange={(e) => setShowTaskContent(e.target.checked)}
+              className="mr-2"
+            />
+            <span className="text-sm font-medium">実行画面でタスク内容を表示する</span>
+          </label>
+        </div>
+      </div>
       
       <div className="mt-8">
         <button

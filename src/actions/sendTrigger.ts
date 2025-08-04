@@ -30,13 +30,36 @@ export async function sendTrigger(
     ...additionalInfo
   };
 
-  if (triggerType === 'task_start') {
-    socket.send('t', PORT, HOST, (err) => {
-      if (err) {
-        console.error('UDP送信エラー:', err);
-      }
-    });
+  // トリガータイプに応じた数字を文字列として送信
+  let triggerCode: string;
+  
+  switch (triggerType) {
+    case 'experiment_start':
+      triggerCode = '1';
+      break;
+    case 'experiment_end':
+      triggerCode = '0';
+      break;
+    case 'experiment_abort':
+      triggerCode = '2';
+      break;
+    case 'task_start':
+      triggerCode = '3';
+      break;
+    case 'task_end':
+      triggerCode = '4';
+      break;
+    default:
+      console.error('不明なトリガータイプ:', triggerType);
+      return { success: false, message: '不明なトリガータイプです', error: 'Invalid trigger type' };
   }
+
+  // UDP送信
+  socket.send(triggerCode, PORT, HOST, (err) => {
+    if (err) {
+      console.error('UDP送信エラー:', err);
+    }
+  });
   
   console.log(`トリガー送信: ${JSON.stringify(data)}`);
   

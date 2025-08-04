@@ -17,8 +17,10 @@ export default function ExperimentPage() {
   const [showExecute, setShowExecute] = useState<boolean>(false);
   const [fixationDurationMin, setFixationDurationMin] = useState<number>(4100);
   const [fixationDurationMax, setFixationDurationMax] = useState<number>(4800);
-  const [taskInstructionDuration] = useState<number>(2000); // 指示表示時間: 2秒
-  const [executeDuration] = useState<number>(3000); // 実行表示時間: 3秒
+  const [showTaskContent, setShowTaskContent] = useState<boolean>(false);
+  const [showFixationCross, setShowFixationCross] = useState<boolean>(true);
+  const [taskInstructionDuration, setTaskInstructionDuration] = useState<number>(2000);
+  const [executeDuration, setExecuteDuration] = useState<number>(3000);
   const [currentFixationDuration, setCurrentFixationDuration] = useState<number>(4100);
 
   // 初期化時にセッションストレージからデータを取得
@@ -36,9 +38,17 @@ export default function ExperimentPage() {
     // 他のパラメータも取得
     const minDuration = sessionStorage.getItem('fixationDurationMin');
     const maxDuration = sessionStorage.getItem('fixationDurationMax');
+    const instructionDuration = sessionStorage.getItem('taskInstructionDuration');
+    const executeDisplayDuration = sessionStorage.getItem('executeDuration');
+    const fixationCrossSetting = sessionStorage.getItem('showFixationCross');
+    const taskContentSetting = sessionStorage.getItem('showTaskContent');
     
     if (minDuration) setFixationDurationMin(parseInt(minDuration));
     if (maxDuration) setFixationDurationMax(parseInt(maxDuration));
+    if (instructionDuration) setTaskInstructionDuration(parseInt(instructionDuration));
+    if (executeDisplayDuration) setExecuteDuration(parseInt(executeDisplayDuration));
+    if (fixationCrossSetting) setShowFixationCross(fixationCrossSetting === 'true');
+    if (taskContentSetting) setShowTaskContent(taskContentSetting === 'true');
     
     // 実験を自動的に開始
     startExperiment(tasks);
@@ -55,8 +65,8 @@ export default function ExperimentPage() {
     
     setIsRunning(true);
     setCurrentTaskIndex(0);
-    setShowFixation(true);
-    setShowTaskInstruction(false);
+    setShowFixation(showFixationCross);
+    setShowTaskInstruction(!showFixationCross);
     setShowExecute(false);
     setCurrentFixationDuration(
       Math.floor(Math.random() * (fixationDurationMax - fixationDurationMin + 1)) + fixationDurationMin
@@ -104,7 +114,8 @@ export default function ExperimentPage() {
 
         if (currentTaskIndex + 1 < orderedTasks.length) {
           setCurrentTaskIndex(currentTaskIndex + 1);
-          setShowFixation(true);
+          setShowFixation(showFixationCross);
+          setShowTaskInstruction(!showFixationCross);
           setCurrentFixationDuration(
             Math.floor(Math.random() * (fixationDurationMax - fixationDurationMin + 1)) + fixationDurationMin
           );
@@ -160,7 +171,7 @@ export default function ExperimentPage() {
   } else if (showTaskInstruction && currentTaskIndex >= 0 && currentTaskIndex < orderedTasks.length) {
     return <TaskInstruction task={orderedTasks[currentTaskIndex]} />;
   } else if (showExecute) {
-    return <ExecuteDisplay />;
+    return <ExecuteDisplay task={orderedTasks[currentTaskIndex]} showTaskContent={showTaskContent} />;
   } else {
     // 待機中または終了時の表示
     return (
