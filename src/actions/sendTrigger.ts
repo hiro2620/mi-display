@@ -6,7 +6,7 @@ type TriggerType = 'experiment_start' | 'experiment_end' | 'experiment_abort' | 
 
 const socket = createSocket('udp4');
 const PORT = 50000; // 送信先のポート番号
-const HOST = '172.16.191.99'; // 送信先のホスト名
+const HOST = '172.16.191.129'; // 送信先のホスト名
 
 /**
  * 外部システムにトリガーを送信するServer Action
@@ -16,7 +16,7 @@ const HOST = '172.16.191.99'; // 送信先のホスト名
  */
 export async function sendTrigger(
   triggerType: TriggerType,
-  taskId?: string, 
+  taskId?: string,
   additionalInfo?: Record<string, any>
 ) {
   // 現在のタイムスタンプ
@@ -44,10 +44,30 @@ export async function sendTrigger(
       triggerCode = '2';
       break;
     case 'task_start':
-      triggerCode = '3';
+      // taskIdに基づいてtriggerCodeを決定
+      if (taskId) {
+        switch (taskId) {
+          case '1':
+            triggerCode = '5';
+            break;
+          case '2':
+            triggerCode = '6';
+            break;
+          case '3':
+            triggerCode = '7';
+            break;
+          case '4':
+            triggerCode = '8';
+            break;
+          default:
+            triggerCode = '4'; // デフォルト値
+        }
+      } else {
+        triggerCode = '4'; // taskIdが未指定の場合のデフォルト
+      }
       break;
     case 'task_end':
-      triggerCode = '4';
+      triggerCode = '3';
       break;
     default:
       console.error('不明なトリガータイプ:', triggerType);

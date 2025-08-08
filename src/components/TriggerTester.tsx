@@ -9,11 +9,12 @@ import { sendTrigger } from '@/actions/sendTrigger';
 export default function TriggerTester() {
   const [result, setResult] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [triggerMessage, setTriggerMessage] = useState<string>('1');
 
-  const handleSendStart = async () => {
+  const handleSendTrigger = async () => {
     setLoading(true);
     try {
-      const response = await sendTrigger('task_start', 'test_task', { source: 'tester' });
+      const response = await sendTrigger('task_start', triggerMessage, { source: 'tester' });
       setResult(JSON.stringify(response, null, 2));
     } catch (error) {
       setResult(`エラー: ${error}`);
@@ -26,9 +27,19 @@ export default function TriggerTester() {
     <>
       <h2 className="text-lg font-semibold mb-4">UDP トリガーテスター</h2>
       
-      <div className="flex gap-4 mb-4">
+      <div className="flex gap-4 mb-4 items-end">
+        <div>
+          <label className="block mb-2 text-sm font-medium">送信メッセージ:</label>
+          <input
+            type="text"
+            value={triggerMessage}
+            onChange={(e) => setTriggerMessage(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="トリガーメッセージを入力"
+          />
+        </div>
         <button
-          onClick={handleSendStart}
+          onClick={handleSendTrigger}
           disabled={loading}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
         >
